@@ -1,0 +1,136 @@
+-- Creación de la base de datos
+CREATE DATABASE ClientOrderDB;
+GO 
+
+-- Seleccionar la base de datos para trabajar
+USE ClientOrderDB;
+GO
+
+-- Creación de la tabla Clientes
+CREATE TABLE Clientes(
+    ClienteID INT IDENTITY(1,1) PRIMARY KEY,
+    Nombre VARCHAR(100),
+    Email VARCHAR(100)
+);
+GO
+
+-- Creación de la tabla Ordenes
+CREATE TABLE Ordenes
+(
+    OrdenID INT IDENTITY(1,1) PRIMARY KEY,
+	--Llave foranea
+    ClienteID INT,
+    FechaOrden DATE,
+    TotalOrden DECIMAL(10,2)
+	--Instancia de la llaver foranea con la tabla ordenes 
+    FOREIGN KEY (ClienteID) REFERENCES Clientes(ClienteID)
+);
+GO
+-- Insertar datos en la tabla Clientes
+INSERT INTO Clientes (Nombre, Email)
+VALUES
+('Juan Pérez', 'juan.perez@example.com'),
+('Ana Gómez', 'ana.gomez@example.com'),
+('Luis Martínez', 'luis.martinez@example.com'),
+('María Fernández', 'maria.fernandez@example.com'),
+('Carlos Rodríguez', 'carlos.rodriguez@example.com');
+GO
+
+-- Insertar datos en la tabla Ordenes
+INSERT INTO Ordenes (ClienteID, FechaOrden, TotalOrden)
+VALUES
+(1, '2024-01-01', 150.75),  
+(1, '2024-01-15', 200.00),  
+(1, '2024-02-01', 250.00),  
+(2, '2024-02-02', 200.00),
+(3, '2024-03-03', 50.00), 
+(4, '2024-04-04', 120.25), 
+(5, '2024-05-05', 75.00),
+(5, '2024-05-10', 100.00),
+(2, '2024-06-01', 300.00),
+(1, '2024-07-01', 400.00),
+(3, '2024-08-01', 60.00),
+(4, '2024-09-01', 150.00),
+(5, '2024-10-01', 200.00),
+(2, '2024-11-01', 250.00),
+(1, '2024-12-01', 300.00),
+(3, '2024-12-15', 80.00),
+(4, '2025-01-01', 180.00),
+(5, '2025-02-01', 220.00),
+(2, '2025-03-01', 280.00),
+(1, '2025-04-01', 350.00),
+(1, '2025-05-01', 0.00); 
+GO
+
+select * from Clientes
+GO
+
+select * from Ordenes
+GO
+
+--Consulta Join que obtiene los clientes y sus ordenes asociadas
+select Ordenes.ClienteID, Clientes.Nombre, Ordenes.FechaOrden, Ordenes.TotalOrden
+from Clientes
+inner join Ordenes on Clientes.ClienteID = Ordenes.ClienteID
+GO
+
+--Procedimiento almacenado recibe clientes y devuelve ordenes asociadas
+create procedure OrdenesClientesSP
+@ClienteId int
+AS
+begin
+    select
+        Ordenes.OrdenID,
+        Ordenes.FechaOrden,
+        Ordenes.TotalOrden,
+        Clientes.Nombre
+    from
+        Ordenes
+    inner join
+        Clientes on Ordenes.ClienteID = Clientes.ClienteID
+    where
+        Clientes.ClienteID = @ClienteID
+end
+go
+
+--Ejecución del procedimiento almacenado de un cliente ID
+exec OrdenesClientesSP @ClienteID = 5
+go
+
+--Trigger para validar que sea el total mayor a 0
+
+create trigger ValidacionTotalTRG
+on Ordenes
+after insert
+as
+begin
+    if exists (SELECT 1 FROM inserted i WHERE i.TotalOrden <= 0)
+    begin
+        raiserror ('El total de la orden debe ser mayor a 0', 16, 1);
+        rollback transaction;
+    end
+end
+go
+
+--validacion del trigger
+INSERT INTO Ordenes (ClienteID, FechaOrden, TotalOrden)
+
+VALUES (1, '2025-06-01', 100.00);
+go
+
+--Creacion de funcion ingresando fecha y devuelve el numero de ordenes
+
+CREATE FUNCTION OrdenesPorFecha (@Fecha DATE)
+RETURNS INT
+AS
+BEGIN
+    DECLARE @NumeroOrdenes INT;
+    SELECT @NumeroOrdenes = COUNT(*) 
+    FROM Ordenes 
+    WHERE FechaOrden = @Fecha;
+    RETURN @NumeroOrdenes;
+END
+GO
+
+--Inicialización de la función 
+SELECT dbo.OrdenesPorFecha('2024-12-01') AS NumeroOrdenes;
