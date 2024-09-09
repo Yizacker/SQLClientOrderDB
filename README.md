@@ -1,17 +1,23 @@
 Gestión de Clientes y Órdenes en SQL Server
+=============================================
 
-Este proyecto implementa una base de datos llamada ClientOrderDB diseñada para gestionar la información de clientes y sus órdenes asociadas.
-El propósito de esta base de datos es almacenar y manipular datos de clientes, registrar sus órdenes, y realizar consultas y operaciones avanzadas como procedimientos almacenados, triggers, y funciones.
+**Resumen**
+-----------
 
-Estructura de la Base de Datos
-1. Creación de la Base de Datos
+Este proyecto implementa una base de datos llamada ClientOrderDB diseñada para gestionar la información de clientes y sus órdenes asociadas. La base de datos almacena y manipula datos de clientes, registra sus órdenes, y realiza consultas y operaciones avanzadas como procedimientos almacenados, triggers, y funciones.
+
+**Estructura de la Base de Datos**
+--------------------------------
+
+### 1. Creación de la Base de Datos
 
 La base de datos ClientOrderDB es creada y seleccionada para uso mediante los siguientes comandos:
 
-     CREATE DATABASE ClientOrderDB;
-     USE ClientOrderDB;
-
-2. Tablas
+```sql
+CREATE DATABASE ClientOrderDB;
+USE ClientOrderDB;
+```
+### 2. Tablas
 Tabla Clientes
 
 Almacena la información básica de los clientes, incluyendo un ID único, nombre y correo electrónico
@@ -35,7 +41,7 @@ Registra las órdenes realizadas por los clientes, incluyendo un ID de orden, la
     );
 
 Operaciones y Consultas
-3. Insertar Datos
+### 3. Insertar Datos
 
 Datos iniciales son insertados tanto en la tabla Clientes como en la tabla Ordenes:
 
@@ -46,7 +52,7 @@ Datos iniciales son insertados tanto en la tabla Clientes como en la tabla Orden
     INSERT INTO Ordenes (ClienteID, FechaOrden, TotalOrden) VALUES
     (1, '2024-01-01', 150.75), ...;
 
-4. Consultas
+### 4. Consultas
 Consultar Clientes y Órdenes
 
 Se puede obtener una lista de todos los clientes junto con sus órdenes correspondientes usando un JOIN entre las tablas Clientes y Ordenes:
@@ -55,7 +61,7 @@ Se puede obtener una lista de todos los clientes junto con sus órdenes correspo
     FROM Clientes
     INNER JOIN Ordenes ON Clientes.ClienteID = Ordenes.ClienteID;
 
-5. Procedimientos Almacenados
+### 5. Procedimientos Almacenados
 OrdenesClientesSP
 
 Este procedimiento almacenado permite obtener las órdenes asociadas a un cliente específico proporcionando su ClienteID:
@@ -69,10 +75,11 @@ Este procedimiento almacenado permite obtener las órdenes asociadas a un client
     END;
     
 Ejemplo de ejecución:
+-----------
 
     EXEC OrdenesClientesSP @ClienteID = 5;
 
-6. Triggers
+### 6. Triggers
 ValidacionTotalTRG
 
 Este trigger garantiza que el total de una orden sea mayor a 0 antes de ser insertado en la tabla Ordenes:
@@ -89,7 +96,7 @@ Este trigger garantiza que el total de una orden sea mayor a 0 antes de ser inse
         END;
     END;
 
-7. Funciones
+### 7. Funciones
 OrdenesPorFecha
 
 Esta función devuelve el número de órdenes realizadas en una fecha específica:
@@ -104,6 +111,7 @@ Esta función devuelve el número de órdenes realizadas en una fecha específic
     END;
 
 Ejemplo de uso:
+-----------
 
     SELECT dbo.OrdenesPorFecha('2024-12-01') AS NumeroOrdenes;
 
